@@ -2,7 +2,11 @@
   "name": "rawcan",
   "version": "0.1.0",
   "description": "Bindings for SocketCAN",
-  "main": "index.js",
+  "author": {
+    "name": "Joe Kramer",
+    "email": "joe.kramer.cu@gmail.com"
+  },
+  "main": "rawcan.js",
   "scripts": {
     "configure": "node-gyp configure",
     "build": "node-gyp build",
@@ -15,7 +19,6 @@
   "keywords": [
     "CAN"
   ],
-  "author": "Joe Kramer",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/jjkr/rawcan/issues"
@@ -23,5 +26,8 @@
   "homepage": "https://github.com/jjkr/rawcan#readme",
   "os": [
     "linux"
-  ]
+  ],
+  "dependencies": {
+    "nan": "^2.1.0"
+  }
 }

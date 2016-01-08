@@ -1,2 +1,3 @@
 /build/
+/node_modules/
 .ycm_extra_conf.pyc
