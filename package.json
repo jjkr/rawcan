@@ -4,6 +4,8 @@
   "description": "Bindings for SocketCAN",
   "main": "index.js",
   "scripts": {
+    "configure": "node-gyp configure",
+    "build": "node-gyp build",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

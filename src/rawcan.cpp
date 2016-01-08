@@ -11,7 +11,7 @@ class Channel
 
 void init(Local<Object> exports)
 {
-    TextBuffer::init(exports);
+    //TextBuffer::init(exports);
 }
 
 NODE_MODULE(rawcan, init)

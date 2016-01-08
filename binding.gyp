@@ -2,7 +2,7 @@
   "targets": [
     {
       "target_name": "rawcan",
-      "sources": [ "src/module.cpp" ],
+      "sources": [ "src/rawcan.cpp" ],
       "cflags": [ "-std=c++14" ]
     }
   ]
