@@ -2,7 +2,7 @@
   "targets": [
     {
       "target_name": "rawcan",
-      "sources": [ "src/rawcan.cpp" ],
+      "sources": [ "rawcan.cpp" ],
       "include_dirs" : [
         "<!(node -e \"require('nan')\")"
       ],
