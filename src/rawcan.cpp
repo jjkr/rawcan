@@ -1,3 +1,4 @@
+#include "raw-can-socket.hpp"
 #include <node.h>
 
 using v8::Local;
@@ -5,14 +6,10 @@ using v8::Object;
 
 namespace rawcan
 {
-class Channel
+void initModule(Local<Object> exports)
 {
-};
-
-void init(Local<Object> exports)
-{
-    //TextBuffer::init(exports);
+    RawCanSocket::init(exports);
 }
 
-NODE_MODULE(rawcan, init)
+NODE_MODULE(rawcan, initModule)
 }

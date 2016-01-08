@@ -20,5 +20,8 @@
   "bugs": {
     "url": "https://github.com/jjkr/rawcan/issues"
   },
-  "homepage": "https://github.com/jjkr/rawcan#readme"
+  "homepage": "https://github.com/jjkr/rawcan#readme",
+  "os": [
+    "linux"
+  ]
 }
