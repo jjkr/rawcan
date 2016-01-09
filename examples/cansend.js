@@ -1,7 +1,5 @@
+var fs = require('fs');
 var rawcan = require('..');
-//import rawcan from '..';
 
-var sock = new rawcan.RawCanSocket("vcan0");
-sock.setFilter(2, 3);
-console.log('sending');
-console.log(rawcan);
+var sock = rawcan.newSocket('vcan0');
+sock.setFilter(0x23, 0x43);
