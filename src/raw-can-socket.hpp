@@ -14,6 +14,9 @@ public:
 
 private:
     explicit RawCanSocket(const char* iface);
+    ~RawCanSocket();
+
+    int getError() const { return m_error; }
 
     static NAN_METHOD(construct);
     static NAN_METHOD(setFilter);
@@ -25,6 +28,7 @@ private:
 
     const int m_socket;
     std::unique_ptr<uv_poll_t> m_uvPoll;
+    int m_error = 0;
     int m_pollEvents = 0;
 };
 }

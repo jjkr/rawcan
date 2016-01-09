@@ -6,7 +6,7 @@
       "include_dirs" : [
         "<!(node -e \"require('nan')\")"
       ],
-      "cflags": [ "-std=c++14" ]
+      "cflags_cc": [ "-std=c++14" ]
     }
   ]
 }

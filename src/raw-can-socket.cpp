@@ -9,6 +9,7 @@
 #include <linux/can/raw.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <memory>
 #include <stdexcept>
 #include <string>
 
@@ -16,6 +17,7 @@ using Nan::SetPrototypeMethod;
 using v8::Local;
 using v8::Function;
 using v8::FunctionTemplate;
+using std::make_unique;
 using std::runtime_error;
 using std::string;
 using namespace std::string_literals;
@@ -38,13 +40,13 @@ NAN_MODULE_INIT(RawCanSocket::init)
     tpl->SetClassName(Nan::New("RawCanSocket").ToLocalChecked());
     tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
-    //SetPrototypeMethod(tpl, "setFilter", setFilter);
+    SetPrototypeMethod(tpl, "setFilter", setFilter);
     //SetPrototypeMethod(tpl, "onFrame", onFrame);
     //SetPrototypeMethod(tpl, "send", send);
     //SetPrototypeMethod(tpl, "stop", stop);
 
     s_constructor.Reset(Nan::GetFunction(tpl).ToLocalChecked());
-    Nan::Set(target, Nan::New("MyObject").ToLocalChecked(),
+    Nan::Set(target, Nan::New("RawCanSocket").ToLocalChecked(),
              Nan::GetFunction(tpl).ToLocalChecked());
 }
 
@@ -65,17 +67,26 @@ NAN_METHOD(RawCanSocket::construct)
 
     Nan::Utf8String iface(info[0]->ToString());
     auto* sock = new RawCanSocket(*iface);
-    sock->Wrap(info.This());
 
+    auto err = sock->getError();
+    if (err < 0)
+    {
+        auto errMsg = systemErrorString(err);
+        return Nan::ThrowError(errMsg.c_str());
+    }
+
+    sock->Wrap(info.This());
     info.GetReturnValue().Set(info.This());
 }
 
 RawCanSocket::RawCanSocket(const char* iface)
-    : m_socket(socket(PF_CAN, SOCK_RAW, CAN_RAW))
+    : m_socket(socket(PF_CAN, SOCK_RAW, CAN_RAW)),
+      m_uvPoll(make_unique<uv_poll_t>())
 {
     if (m_socket < 0)
     {
-        throw runtime_error(systemErrorString(m_socket));
+        m_error = m_socket;
+        return;
     }
 
     // set nonblocking mode
@@ -86,20 +97,68 @@ RawCanSocket::RawCanSocket(const char* iface)
     auto canAddr = sockaddr_can();
     auto ifr = ifreq();
     strcpy(ifr.ifr_name, iface);
-    ioctl(m_socket, SIOCGIFINDEX, &ifr);
+    m_error = ioctl(m_socket, SIOCGIFINDEX, &ifr);
+    if (m_error < 0)
+    {
+        goto on_error;
+    }
+
     canAddr.can_family = AF_CAN;
     canAddr.can_ifindex = ifr.ifr_ifindex;
 
     // bind
-    auto err = bind(m_socket, reinterpret_cast<struct sockaddr*>(&canAddr),
-                    sizeof(canAddr));
-    if (err < 0)
+    m_error = bind(m_socket, reinterpret_cast<struct sockaddr*>(&canAddr),
+                   sizeof(canAddr));
+    if (m_error < 0)
     {
-        close(m_socket);
-        throw runtime_error(systemErrorString(err));
+        goto on_error;
     }
 
     uv_poll_init_socket(uv_default_loop(), m_uvPoll.get(), m_socket);
     m_uvPoll->data = this;
+
+    return;
+
+on_error:
+    close(m_socket);
+}
+
+RawCanSocket::~RawCanSocket()
+{
+    if (!m_error)
+    {
+        uv_poll_stop(m_uvPoll.get());
+        // The memory for the poll handle (uv_poll_t) needs to stick around for
+        // the next run of the event loop so it can be closed properly. The
+        // memory gets deleted in the close callback
+        auto* handle = reinterpret_cast<uv_handle_t*>(m_uvPoll.release());
+        uv_close(handle, [](auto* handle) {
+            auto* pollHandle = reinterpret_cast<uv_poll_t*>(handle);
+            delete pollHandle;
+        });
+        close(m_socket);
+    }
+}
+
+NAN_METHOD(RawCanSocket::setFilter)
+{
+    RawCanSocket* socket = ObjectWrap::Unwrap<RawCanSocket>(info.Holder());
+
+    if (info.Length() != 2)
+    {
+        return Nan::ThrowError("Wrong number of arguments");
+    }
+    if (!info[0]->IsNumber() || !info[1]->IsNumber())
+    {
+        return Nan::ThrowTypeError("Arguments must be numbers");
+    }
+
+    auto mask = Nan::To<uint32_t>(info[0]).FromJust();
+    auto filter = Nan::To<uint32_t>(info[1]).FromJust();
+
+    struct can_filter cf[1];
+    cf[0].can_id = filter;
+    cf[0].can_mask = mask;
+    setsockopt(socket->m_socket, SOL_CAN_RAW, CAN_RAW_FILTER, &cf, sizeof(cf));
 }
 }
