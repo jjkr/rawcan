@@ -1,5 +1,7 @@
 'use strict';
 
+var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -22,10 +24,6 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 var CANWrap = (0, _bindings2.default)('can_wrap').CANWrap;
 
-var BIND_STATE_UNBOUND = 0;
-var BIND_STATE_BINDING = 1;
-var BIND_STATE_BOUND = 2;
-
 var Socket = function (_EventEmitter) {
   _inherits(Socket, _EventEmitter);
 
@@ -36,9 +34,22 @@ var Socket = function (_EventEmitter) {
 
     _this._handle = new CANWrap();
     _this._receiving = false;
-    _this._bindState = BIND_STATE_UNBOUND;
     return _this;
   }
+
+  _createClass(Socket, [{
+    key: 'bind',
+    value: function bind(iface) {
+      if (this._receiving) {
+        throw new Error('Socket is already bound');
+      }
+
+      var err = this._handle.bind(iface);
+      if (err != 0) {
+        throw new Error('failed to bind: ' + err);
+      }
+    }
+  }]);
 
   return Socket;
 }(_events2.default);

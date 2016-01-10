@@ -64,11 +64,16 @@ NAN_METHOD(CANWrap::Bind)
     strcpy(ifr.ifr_name, *iface);
     auto err = ioctl(obj->m_socket, SIOCGIFINDEX, &ifr);
 
-    auto canAddr = sockaddr_can();
-    canAddr.can_family = AF_CAN;
-    canAddr.can_ifindex = ifr.ifr_ifindex;
+    if (err == 0)
+    {
+        auto canAddr = sockaddr_can();
+        canAddr.can_family = AF_CAN;
+        canAddr.can_ifindex = ifr.ifr_ifindex;
 
-    err = bind(obj->m_socket, reinterpret_cast<struct sockaddr*>(&canAddr),
-               sizeof(canAddr));
+        err = bind(obj->m_socket, reinterpret_cast<struct sockaddr*>(&canAddr),
+                   sizeof(canAddr));
+    }
+
+    info.GetReturnValue().Set(err);
 }
 }
