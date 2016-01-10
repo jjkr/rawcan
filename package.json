@@ -14,7 +14,7 @@
     "build:js": "babel lib --out-dir dist",
     "build": "npm run build:gyp && npm run build:js",
     "watch:js": "npm run build:js -- --watch",
-    "test": "NODE_ENV=test mocha test --recursive --require babelhook"
+    "test": "NODE_ENV=test mocha test --recursive --require babel-core/register"
   },
   "repository": {
     "type": "git",
@@ -36,8 +36,10 @@
     "nan": "^2.2.0"
   },
   "devDependencies": {
+    "babel-core": "^6.4.0",
     "babel-eslint": "^4.1.6",
     "babel-preset-es2015": "^6.3.13",
+    "chai": "^3.4.1",
     "eslint": "^1.10.3",
     "mocha": "^2.3.4"
   }

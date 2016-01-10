@@ -19,13 +19,22 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 var CANWrap = require('bindings')('can_wrap');
 
+var BIND_STATE_UNBOUND = 0;
+var BIND_STATE_BINDING = 1;
+var BIND_STATE_BOUND = 2;
+
 var Socket = exports.Socket = function (_EventEmitter) {
   _inherits(Socket, _EventEmitter);
 
   function Socket() {
     _classCallCheck(this, Socket);
 
-    return _possibleConstructorReturn(this, Object.getPrototypeOf(Socket).apply(this, arguments));
+    var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Socket).call(this));
+
+    _this._handle = new CANWrap();
+    _this._receiving = false;
+    _this._bindState = BIND_STATE_UNBOUND;
+    return _this;
   }
 
   return Socket;

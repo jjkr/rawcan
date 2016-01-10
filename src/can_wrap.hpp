@@ -10,13 +10,14 @@ public:
     static NAN_MODULE_INIT(Initialize);
 
 private:
-    CANWrap(uv_loop_t* loop) noexcept;
+    CANWrap() noexcept;
 
     static NAN_METHOD(New);
+    static NAN_METHOD(Bind);
 
     static Nan::Persistent<v8::Function> s_constructor;
 
-    const int m_fd;
+    const int m_socket;
     uv_poll_t m_uvHandle;
 };
 
