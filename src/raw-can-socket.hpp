@@ -1,6 +1,5 @@
 #pragma once
 #include <nan.h>
-#include <nan.h>
 #include <memory>
 
 namespace rawcan

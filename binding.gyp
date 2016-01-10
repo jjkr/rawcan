@@ -1,8 +1,8 @@
 {
   "targets": [
     {
-      "target_name": "rawcan",
-      "sources": [ "src/rawcan.cpp", "src/raw-can-socket.cpp" ],
+      "target_name": "can_wrap",
+      "sources": [ "src/can_wrap.cpp" ],
       "include_dirs" : [
         "<!(node -e \"require('nan')\")"
       ],

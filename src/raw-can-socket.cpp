@@ -9,6 +9,7 @@
 #include <linux/can/raw.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <cassert>
 #include <memory>
 #include <stdexcept>
 #include <string>
