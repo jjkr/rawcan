@@ -27,14 +27,20 @@ var CANWrap = (0, _bindings2.default)('can_wrap').CANWrap;
 var Socket = function (_EventEmitter) {
   _inherits(Socket, _EventEmitter);
 
-  function Socket() {
+  function Socket(iface) {
     _classCallCheck(this, Socket);
 
     var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Socket).call(this));
 
     _this._handle = new CANWrap();
+    _this._handle.onSent(function () {
+      _this._onSent();
+    });
     _this._receiving = false;
     _this._sendQueue = [];
+    if (typeof iface === 'string' || iface instanceof String) {
+      _this.bind(iface);
+    }
     return _this;
   }
 
@@ -58,9 +64,6 @@ var Socket = function (_EventEmitter) {
   }, {
     key: 'send',
     value: function send(id, buffer, callback) {
-      var sending = this._sendQueue.length > 0;
-      this._sendQueue.push([id, buffer, callback]);
-
       if (typeof buffer === 'string') {
         buffer = new Buffer(buffer);
       } else if (!(buffer instanceof Buffer)) {
@@ -72,11 +75,26 @@ var Socket = function (_EventEmitter) {
         callback = undefined;
       }
 
-      if (!sending) {}
+      var sending = this._sendQueue.length > 0;
+      this._sendQueue.push({ id: id, buffer: buffer, callback: callback });
+
+      if (!sending) {
+        this._handle.send(id, buffer);
+      }
     }
   }, {
     key: '_onSent',
-    value: function _onSent(err) {}
+    value: function _onSent(err) {
+      var sent = this._sendQueue[0];
+      if (sent.callback) {
+        sent.callback(err);
+      }
+      this._sendQueue.shift();
+      var next = this._sendQueue[0];
+      if (this._sendQueue.length > 0) {
+        this._handle.send(next.id, next.buffer);
+      }
+    }
   }]);
 
   return Socket;

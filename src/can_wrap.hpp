@@ -19,7 +19,7 @@ private:
     static NAN_METHOD(Send);
     static NAN_METHOD(Close);
     static NAN_METHOD(OnSent);
-    static NAN_METHOD(OnReceived);
+    static NAN_METHOD(OnMessage);
 
     static void uvPollCallback(uv_poll_t* pollHandle, int status,
                                int events) noexcept;

@@ -12,10 +12,16 @@
 #include <cassert>
 #include <utility>
 
+
+// TODO
+#include <iostream>
+using namespace std;
+
 using Nan::Callback;
 using v8::Local;
 using v8::Function;
 using v8::FunctionTemplate;
+using v8::Value;
 using std::begin;
 using std::copy_n;
 using std::make_unique;
@@ -30,6 +36,7 @@ NAN_MODULE_INIT(CANWrap::Initialize)
     tpl->SetClassName(Nan::New("CANWrap").ToLocalChecked());
     tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
+    SetPrototypeMethod(tpl, "onSent", OnSent);
     SetPrototypeMethod(tpl, "bind", Bind);
     SetPrototypeMethod(tpl, "send", Send);
     //SetPrototypeMethod(tpl, "setFilter", SetFilter);
@@ -101,6 +108,9 @@ NAN_METHOD(CANWrap::Send)
     auto length = node::Buffer::Length(nodeBuffer);
     sendBuffer.can_dlc = length;
     std::copy_n(node::Buffer::Data(nodeBuffer), length, begin(sendBuffer.data));
+
+    self->m_pollEvents |= UV_WRITABLE;
+    self->doPoll();
 }
 
 NAN_METHOD(CANWrap::OnSent)
@@ -128,11 +138,14 @@ void CANWrap::pollCallback(int status, int events) noexcept
     {
         if (events & UV_WRITABLE)
         {
-            const auto err = doSend();
+            const auto err = doSend() < 0 ? errno : 0;
+
             m_pollEvents &= ~UV_WRITABLE;
-            if (err < 0)
+            if (m_sentCallback)
             {
-                // TODO handle send error
+                Nan::HandleScope scope;
+                Local<Value> argv[1] = {Nan::New(err)};
+                m_sentCallback->Call(1, argv);
             }
 
             doPoll();
