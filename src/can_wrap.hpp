@@ -23,7 +23,6 @@ private:
     static NAN_METHOD(Ref);
     static NAN_METHOD(UnRef);
 
-    static void uvCloseCallback(uv_handle_t* handle);
     static void uvPollCallback(uv_poll_t* pollHandle, int status,
                                int events);
     void pollCallback(int status, int events);

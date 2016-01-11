@@ -118,7 +118,10 @@ NAN_METHOD(CANWrap::Close)
 
     uv_poll_stop(&self->m_uvHandle);
     uv_close(reinterpret_cast<uv_handle_t*>(&self->m_uvHandle),
-             uvCloseCallback);
+             [](uv_handle_t* handle) {
+                 CANWrap* can = reinterpret_cast<CANWrap*>(handle->data);
+                 close(can->m_socket);
+             });
 }
 
 NAN_METHOD(CANWrap::SetFilter)
@@ -176,12 +179,6 @@ NAN_METHOD(CANWrap::UnRef)
     assert(self);
 
     uv_unref(reinterpret_cast<uv_handle_t*>(&self->m_uvHandle));
-}
-
-void CANWrap::uvCloseCallback(uv_handle_t* handle)
-{
-    CANWrap* can = reinterpret_cast<CANWrap*>(handle->data);
-    close(can->m_socket);
 }
 
 void CANWrap::uvPollCallback(uv_poll_t* pollHandle, int status,
