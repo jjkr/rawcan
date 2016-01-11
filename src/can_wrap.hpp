@@ -42,7 +42,6 @@ private:
     can_frame m_recvBuffer;
 
     can_frame m_sendBuffer;
-    bool m_sendPending = false;
     int m_pollEvents = 0;
 };
 

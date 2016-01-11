@@ -5,9 +5,15 @@ describe('can Socket', () => {
   describe('constructor', () => {
     it('constructs default', () => {
       const sock = new can.Socket();
+      sock.close();
     });
     it('constructs with interface', () => {
       const sock = new can.Socket('vcan0');
+      sock.close();
+    });
+    it('createsSocket', () => {
+      const sock = can.createSocket();
+      sock.close();
     });
   });
 
@@ -15,6 +21,12 @@ describe('can Socket', () => {
     it('binds to vcan0', () => {
       const sock = new can.Socket();
       sock.bind('vcan0');
+      sock.close();
+    });
+    it('fails to bind', () => {
+      const sock = new can.Socket();
+      expect(() => { sock.bind('bogus'); }).to.throw(Error);
+      sock.close();
     });
   });
 
@@ -23,6 +35,7 @@ describe('can Socket', () => {
       const iface = 'vcan0';
       const sock = new can.Socket(iface);
       expect(sock.iface).to.equal(iface);
+      sock.close();
     });
   });
 
@@ -30,7 +43,8 @@ describe('can Socket', () => {
     it('sends a buffer', () => {
       const sock = new can.Socket();
       sock.bind('vcan0');
-      sock.send(0x34, new Buffer([0xDE, 0xAD, 0xBE, 0xEF]));
+      sock.send(0x34, new Buffer([0xDE, 0xAD, 0xBE, 0xEF]),
+                () => { sock.close(); });
     });
     it('sends a string', () => {
       const sock = new can.Socket();
@@ -42,6 +56,7 @@ describe('can Socket', () => {
       const sock = new can.Socket();
       sock.bind('vcan0');
       expect(() => {sock.send(0x34, new Foo())}).to.throw(TypeError);
+      sock.close();
     });
     it('triggers callback', (done) => {
       const sock = new can.Socket();

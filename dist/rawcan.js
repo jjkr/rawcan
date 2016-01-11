@@ -129,5 +129,8 @@ var Socket = function (_EventEmitter) {
 }(_events2.default);
 
 exports.default = {
-  Socket: Socket
+  Socket: Socket,
+  createSocket: function createSocket(iface) {
+    return new Socket(iface);
+  }
 };
