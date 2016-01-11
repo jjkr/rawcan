@@ -11,15 +11,13 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
-#include <utility>
+#include <cstring>
 
 using Nan::Callback;
 using v8::Local;
 using v8::Function;
 using v8::FunctionTemplate;
 using v8::Value;
-using std::begin;
-using std::copy_n;
 
 namespace rawcan
 {
@@ -106,7 +104,7 @@ NAN_METHOD(CANWrap::Send)
 
     size_t length = node::Buffer::Length(info[1]);
     sendBuffer.can_dlc = length;
-    std::copy_n(node::Buffer::Data(info[1]), length, begin(sendBuffer.data));
+    memcpy(sendBuffer.data, node::Buffer::Data(info[1]), length);
 
     self->m_pollEvents |= UV_WRITABLE;
     self->doPoll();
