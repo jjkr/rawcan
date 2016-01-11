@@ -8,8 +8,6 @@ Object.defineProperty(exports, "__esModule", {
 
 var _events = require('events');
 
-var _events2 = _interopRequireDefault(_events);
-
 var _bindings = require('bindings');
 
 var _bindings2 = _interopRequireDefault(_bindings);
@@ -126,7 +124,7 @@ var Socket = function (_EventEmitter) {
   }]);
 
   return Socket;
-}(_events2.default);
+}(_events.EventEmitter);
 
 exports.default = {
   Socket: Socket,
