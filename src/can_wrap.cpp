@@ -37,6 +37,7 @@ NAN_MODULE_INIT(CANWrap::Initialize)
     tpl->InstanceTemplate()->SetInternalFieldCount(1);
 
     SetPrototypeMethod(tpl, "onSent", OnSent);
+    SetPrototypeMethod(tpl, "onMessage", OnMessage);
     SetPrototypeMethod(tpl, "bind", Bind);
     SetPrototypeMethod(tpl, "send", Send);
     //SetPrototypeMethod(tpl, "setFilter", SetFilter);
@@ -69,13 +70,13 @@ NAN_METHOD(CANWrap::New)
 NAN_METHOD(CANWrap::Bind)
 {
     assert(1 == info.Length());
-    CANWrap* obj = ObjectWrap::Unwrap<CANWrap>(info.Holder());
+    CANWrap* self = ObjectWrap::Unwrap<CANWrap>(info.Holder());
 
     Nan::Utf8String iface(info[0]->ToString());
 
     auto ifr = ifreq();
     strcpy(ifr.ifr_name, *iface);
-    auto err = ioctl(obj->m_socket, SIOCGIFINDEX, &ifr);
+    auto err = ioctl(self->m_socket, SIOCGIFINDEX, &ifr);
 
     if (err == 0)
     {
@@ -83,9 +84,12 @@ NAN_METHOD(CANWrap::Bind)
         canAddr.can_family = AF_CAN;
         canAddr.can_ifindex = ifr.ifr_ifindex;
 
-        err = bind(obj->m_socket, reinterpret_cast<struct sockaddr*>(&canAddr),
+        err = bind(self->m_socket, reinterpret_cast<struct sockaddr*>(&canAddr),
                    sizeof(canAddr));
     }
+
+    self->m_pollEvents |= UV_READABLE;
+    self->doPoll();
 
     info.GetReturnValue().Set(err);
 }
@@ -124,6 +128,17 @@ NAN_METHOD(CANWrap::OnSent)
     self->m_sentCallback = make_unique<Callback>(info[0].As<v8::Function>());
 }
 
+NAN_METHOD(CANWrap::OnMessage)
+{
+    // onMessage(callback)
+    assert(1 == info.Length());
+
+    CANWrap* self = ObjectWrap::Unwrap<CANWrap>(info.Holder());
+    assert(self);
+
+    self->m_messageCallback = make_unique<Callback>(info[0].As<v8::Function>());
+}
+
 void CANWrap::uvPollCallback(uv_poll_t* pollHandle, int status,
                              int events) noexcept
 {
@@ -155,7 +170,17 @@ void CANWrap::pollCallback(int status, int events) noexcept
             const auto err = doRecv();
             if (err < 0)
             {
-                // TODO handle send error
+                // handle error
+            }
+            else if (m_messageCallback)
+            {
+                Nan::HandleScope scope;
+                Local<Value> argv[] = {
+                    Nan::New(m_recvBuffer.can_id),
+                    Nan::NewBuffer(reinterpret_cast<char*>(&m_recvBuffer.data),
+                                   m_recvBuffer.can_dlc)
+                        .ToLocalChecked()};
+                m_messageCallback->Call(2, argv);
             }
         }
     }

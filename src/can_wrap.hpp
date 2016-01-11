@@ -31,7 +31,7 @@ private:
     static Nan::Persistent<v8::Function> s_constructor;
 
     std::unique_ptr<Nan::Callback> m_sentCallback;
-    std::unique_ptr<Nan::Callback> m_receivedCallback;
+    std::unique_ptr<Nan::Callback> m_messageCallback;
 
     const int m_socket;
     uv_poll_t m_uvHandle;

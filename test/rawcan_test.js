@@ -18,6 +18,14 @@ describe('can Socket', () => {
     });
   });
 
+  describe('iface', () => {
+    it('returns the interface', () => {
+      const iface = 'vcan0';
+      const sock = new can.Socket(iface);
+      expect(sock.iface).to.equal(iface);
+    });
+  });
+
   describe('send', () => {
     it('sends a buffer', () => {
       const sock = new can.Socket();
@@ -50,6 +58,15 @@ describe('can Socket', () => {
       sock.bind('vcan0');
       sock.send(0x34, new Buffer([0x12, 0x34]));
       sock.send(0x34, new Buffer([0x56, 0x78]), (err) => { done(); });
+    });
+  });
+
+  describe('recv', () => {
+    it('receives a message', (done) => {
+      const server = new can.Socket('vcan0');
+      server.on('message', (id, buffer) => { done(); });
+      const client = new can.Socket('vcan0');
+      client.send(0x34, new Buffer([0xDE, 0xAD, 0xBE, 0xEF]));
     });
   });
 });

@@ -33,8 +33,11 @@ var Socket = function (_EventEmitter) {
     var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Socket).call(this));
 
     _this._handle = new CANWrap();
-    _this._handle.onSent(function () {
-      _this._onSent();
+    _this._handle.onSent(function (err) {
+      _this._onSent(err);
+    });
+    _this._handle.onMessage(function (id, buffer) {
+      _this._onMessage(id, buffer);
     });
     _this._bound = false;
     _this._sendQueue = [];
@@ -56,6 +59,7 @@ var Socket = function (_EventEmitter) {
         throw new Error('Failed to bind: ' + err);
       }
 
+      this._iface = iface;
       this._bound = true;
       return this;
     }
@@ -92,6 +96,16 @@ var Socket = function (_EventEmitter) {
       if (this._sendQueue.length > 0) {
         this._handle.send(next.id, next.buffer);
       }
+    }
+  }, {
+    key: '_onMessage',
+    value: function _onMessage(id, buffer) {
+      this.emit('message', id, buffer);
+    }
+  }, {
+    key: 'iface',
+    get: function get() {
+      return this._iface;
     }
   }]);
 
