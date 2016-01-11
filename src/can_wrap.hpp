@@ -45,5 +45,5 @@ private:
     int m_pollEvents;
 };
 
-NODE_MODULE(CANWrap, CANWrap::Initialize);
+NODE_MODULE(can_wrap, CANWrap::Initialize);
 }
