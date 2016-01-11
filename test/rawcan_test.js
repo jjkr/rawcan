@@ -35,16 +35,21 @@ describe('can Socket', () => {
       sock.bind('vcan0');
       expect(() => {sock.send(0x34, new Foo())}).to.throw(TypeError);
     });
-    it('sends two frames', () => {
+    it('triggers callback', (done) => {
+      const sock = new can.Socket();
+      sock.bind('vcan0');
+      sock.send(0x34, new Buffer([0xca, 0xfe]), (err) => {
+        if (err) {
+          throw Error('Error: ' + err);
+        }
+        done();
+      });
+    });
+    it('sends two frames', (done) => {
       const sock = new can.Socket();
       sock.bind('vcan0');
       sock.send(0x34, new Buffer([0x12, 0x34]));
-      sock.send(0x34, new Buffer([0x56, 0x78]));
-    });
-    it('triggers callback', () => {
-      const sock = new can.Socket();
-      sock.bind('vcan0');
-      sock.send(0x34, 'asdf', (err) => {});
+      sock.send(0x34, new Buffer([0x56, 0x78]), (err) => { done(); });
     });
   });
 });

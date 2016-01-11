@@ -36,7 +36,7 @@ var Socket = function (_EventEmitter) {
     _this._handle.onSent(function () {
       _this._onSent();
     });
-    _this._receiving = false;
+    _this._bound = false;
     _this._sendQueue = [];
     if (typeof iface === 'string' || iface instanceof String) {
       _this.bind(iface);
@@ -47,18 +47,16 @@ var Socket = function (_EventEmitter) {
   _createClass(Socket, [{
     key: 'bind',
     value: function bind(iface) {
-      if (this._receiving) {
+      if (this._bound) {
         throw new Error('Socket is already bound');
       }
 
       var err = this._handle.bind(iface);
       if (err != 0) {
-        throw new Error('failed to bind: ' + err);
+        throw new Error('Failed to bind: ' + err);
       }
 
-      //this._handle.recvStart();
-      this._receiving = true;
-
+      this._bound = true;
       return this;
     }
   }, {
