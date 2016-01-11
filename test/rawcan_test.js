@@ -4,19 +4,13 @@ import can from '..';
 describe('can Socket', () => {
   describe('constructor', () => {
     it('constructs default', () => {
-      console.log('constructing');
       const sock = new can.Socket();
-      console.log('constructed');
-      sock.close();
-      console.log('closed');
     });
     it('constructs with interface', () => {
       const sock = new can.Socket('vcan0');
-      sock.close();
     });
     it('createsSocket', () => {
       const sock = can.createSocket();
-      sock.close();
     });
   });
 
@@ -24,12 +18,10 @@ describe('can Socket', () => {
     it('binds to vcan0', () => {
       const sock = new can.Socket();
       sock.bind('vcan0');
-      sock.close();
     });
     it('fails to bind', () => {
       const sock = new can.Socket();
       expect(() => { sock.bind('bogus'); }).to.throw(Error);
-      sock.close();
     });
   });
 
@@ -38,7 +30,6 @@ describe('can Socket', () => {
       const iface = 'vcan0';
       const sock = new can.Socket(iface);
       expect(sock.iface).to.equal(iface);
-      sock.close();
     });
   });
 
@@ -52,7 +43,7 @@ describe('can Socket', () => {
     it('sends a string', () => {
       const sock = new can.Socket();
       sock.bind('vcan0');
-      sock.send(0x34, 'asdf');
+      sock.send(0x34, 'asdf', () => { sock.close(); });
     });
     it('throws on bad buffer', () => {
       class Foo {}

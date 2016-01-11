@@ -20,6 +20,7 @@ private:
     static NAN_METHOD(SetFilter);
     static NAN_METHOD(OnSent);
     static NAN_METHOD(OnMessage);
+    static NAN_METHOD(OnError);
     static NAN_METHOD(Ref);
     static NAN_METHOD(UnRef);
 
@@ -29,11 +30,13 @@ private:
     int doPoll();
     int doSend();
     int doRecv();
+    void callErrorCallback(int err);
 
     static Nan::Persistent<v8::Function> s_constructor;
 
     Nan::Callback m_sentCallback;
     Nan::Callback m_messageCallback;
+    Nan::Callback m_errorCallback;
 
     const int m_socket;
     uv_poll_t m_uvHandle;

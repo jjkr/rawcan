@@ -147,6 +147,7 @@ NAN_METHOD(CANWrap::OnSent)
 {
     // onSent(callback)
     assert(1 == info.Length());
+    assert(info[0]->IsFunction());
 
     auto* self = ObjectWrap::Unwrap<CANWrap>(info.Holder());
     assert(self);
@@ -158,11 +159,24 @@ NAN_METHOD(CANWrap::OnMessage)
 {
     // onMessage(callback)
     assert(1 == info.Length());
+    assert(info[0]->IsFunction());
 
     auto* self = ObjectWrap::Unwrap<CANWrap>(info.Holder());
     assert(self);
 
     self->m_messageCallback.SetFunction(info[0].As<v8::Function>());
+}
+
+NAN_METHOD(CANWrap::OnError)
+{
+    // onMessage(callback)
+    assert(1 == info.Length());
+    assert(info[0]->IsFunction());
+
+    auto* self = ObjectWrap::Unwrap<CANWrap>(info.Holder());
+    assert(self);
+
+    self->m_errorCallback.SetFunction(info[0].As<v8::Function>());
 }
 
 NAN_METHOD(CANWrap::Ref)
@@ -205,13 +219,17 @@ void CANWrap::pollCallback(int status, int events)
                 Local<Value> argv[1] = {Nan::New(err)};
                 m_sentCallback.Call(1, argv);
             }
+            else
+            {
+                callErrorCallback(err);
+            }
         }
         else if (events & UV_READABLE)
         {
             const int err = doRecv();
             if (err < 0)
             {
-                // handle error
+                callErrorCallback(errno);
             }
             else if (!m_messageCallback.IsEmpty())
             {
@@ -227,7 +245,7 @@ void CANWrap::pollCallback(int status, int events)
     }
     else
     {
-        // TODO handle system error on poll()
+        callErrorCallback(status);
     }
 }
 
@@ -251,5 +269,15 @@ int CANWrap::doSend()
 int CANWrap::doRecv()
 {
     return ::recv(m_socket, &m_recvBuffer, sizeof(m_recvBuffer), 0);
+}
+
+void CANWrap::callErrorCallback(int err)
+{
+    if (!m_errorCallback.IsEmpty())
+    {
+        Nan::HandleScope scope;
+        Local<Value> argv[1] = {Nan::New(err)};
+        m_errorCallback.Call(1, argv);
+    }
 }
 }
