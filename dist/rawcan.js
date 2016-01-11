@@ -102,7 +102,7 @@ var Socket = function (_EventEmitter) {
       this._healthCheck();
       this._handle.close();
       this._handle = undefined;
-      //this.emit('close');
+      this.emit('close');
     }
   }, {
     key: 'ref',

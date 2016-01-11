@@ -12,6 +12,11 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
+#include <cstdlib>
+
+// TODO JJK
+#include <iostream>
+using namespace std;
 
 using Nan::Callback;
 using v8::Local;
@@ -38,8 +43,8 @@ NAN_MODULE_INIT(CANWrap::Initialize)
     SetPrototypeMethod(tpl, "onSent", OnSent);
     SetPrototypeMethod(tpl, "onMessage", OnMessage);
     SetPrototypeMethod(tpl, "onError", OnError);
-    SetPrototypeMethod(tpl, "ref", Ref);
-    SetPrototypeMethod(tpl, "unref", UnRef);
+    SetPrototypeMethod(tpl, "ref", UvRef);
+    SetPrototypeMethod(tpl, "unref", UvUnRef);
 
     s_constructor.Reset(Nan::GetFunction(tpl).ToLocalChecked());
     Nan::Set(target, Nan::New("CANWrap").ToLocalChecked(),
@@ -58,16 +63,12 @@ CANWrap::CANWrap()
     m_uvHandle.data = this;
 }
 
-CANWrap::~CANWrap()
-{
-    doClose();
-}
-
 NAN_METHOD(CANWrap::New)
 {
     assert(info.IsConstructCall());
     auto* can = new CANWrap();
     can->Wrap(info.This());
+    info.GetReturnValue().Set(info.This());
 }
 
 NAN_METHOD(CANWrap::Bind)
@@ -75,6 +76,7 @@ NAN_METHOD(CANWrap::Bind)
     assert(1 == info.Length());
     CANWrap* self = ObjectWrap::Unwrap<CANWrap>(info.Holder());
 
+    assert(self);
     assert(!self->m_closed);
 
     Nan::Utf8String iface(info[0]->ToString());
@@ -92,6 +94,8 @@ NAN_METHOD(CANWrap::Bind)
         err = bind(self->m_socket, reinterpret_cast<struct sockaddr*>(&canAddr),
                    sizeof(canAddr));
     }
+
+    self->Ref();
 
     self->m_pollEvents |= UV_READABLE;
     self->doPoll();
@@ -185,7 +189,7 @@ NAN_METHOD(CANWrap::OnError)
     self->m_errorCallback.SetFunction(info[0].As<v8::Function>());
 }
 
-NAN_METHOD(CANWrap::Ref)
+NAN_METHOD(CANWrap::UvRef)
 {
     auto* self = ObjectWrap::Unwrap<CANWrap>(info.Holder());
     assert(self);
@@ -193,7 +197,7 @@ NAN_METHOD(CANWrap::Ref)
     uv_ref(reinterpret_cast<uv_handle_t*>(&self->m_uvHandle));
 }
 
-NAN_METHOD(CANWrap::UnRef)
+NAN_METHOD(CANWrap::UvUnRef)
 {
     auto* self = ObjectWrap::Unwrap<CANWrap>(info.Holder());
     assert(self);
@@ -242,8 +246,8 @@ void CANWrap::pollCallback(int status, int events)
                 Nan::HandleScope scope;
                 Local<Value> argv[] = {
                     Nan::New(m_recvBuffer.can_id),
-                    Nan::NewBuffer(reinterpret_cast<char*>(&m_recvBuffer.data),
-                                   m_recvBuffer.can_dlc)
+                    Nan::CopyBuffer(reinterpret_cast<char*>(&m_recvBuffer.data),
+                                    m_recvBuffer.can_dlc)
                         .ToLocalChecked()};
                 m_messageCallback.Call(2, argv);
             }
@@ -288,8 +292,12 @@ void CANWrap::doClose()
     {
         uv_poll_stop(&m_uvHandle);
         uv_close(reinterpret_cast<uv_handle_t*>(&m_uvHandle),
-                 [](uv_handle_t*) {});
-        m_closed = true;
+                 [](uv_handle_t* handle) {
+                     auto* self = reinterpret_cast<CANWrap*>(handle->data);
+                     assert(!self->persistent().IsEmpty());
+                     self->Unref();
+                 });
+       m_closed = true;
     }
 }
 

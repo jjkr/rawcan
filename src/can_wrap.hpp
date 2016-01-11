@@ -12,7 +12,6 @@ public:
 
 private:
     CANWrap();
-    ~CANWrap();
 
     static NAN_METHOD(New);
     static NAN_METHOD(Bind);
@@ -22,8 +21,8 @@ private:
     static NAN_METHOD(OnSent);
     static NAN_METHOD(OnMessage);
     static NAN_METHOD(OnError);
-    static NAN_METHOD(Ref);
-    static NAN_METHOD(UnRef);
+    static NAN_METHOD(UvRef);
+    static NAN_METHOD(UvUnRef);
 
     static void uvPollCallback(uv_poll_t* pollHandle, int status,
                                int events);
