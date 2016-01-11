@@ -37,7 +37,7 @@ var Socket = function (_EventEmitter) {
       _this._onSent(err);
     });
     _this._handle.onMessage(function (id, buffer) {
-      _this._onMessage(id, buffer);
+      _this.emit('message', id, buffer);
     });
     _this._bound = false;
     _this._sendQueue = [];
@@ -85,6 +85,15 @@ var Socket = function (_EventEmitter) {
       }
     }
   }, {
+    key: 'setFilter',
+    value: function setFilter(filter, mask) {}
+  }, {
+    key: 'close',
+    value: function close() {
+      this._handle.close();
+      this._handle = undefined;
+    }
+  }, {
     key: '_onSent',
     value: function _onSent(err) {
       var sent = this._sendQueue[0];
@@ -96,11 +105,6 @@ var Socket = function (_EventEmitter) {
       if (this._sendQueue.length > 0) {
         this._handle.send(next.id, next.buffer);
       }
-    }
-  }, {
-    key: '_onMessage',
-    value: function _onMessage(id, buffer) {
-      this.emit('message', id, buffer);
     }
   }, {
     key: 'iface',

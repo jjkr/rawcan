@@ -40,6 +40,7 @@ NAN_MODULE_INIT(CANWrap::Initialize)
     SetPrototypeMethod(tpl, "onMessage", OnMessage);
     SetPrototypeMethod(tpl, "bind", Bind);
     SetPrototypeMethod(tpl, "send", Send);
+    SetPrototypeMethod(tpl, "close", Close);
     //SetPrototypeMethod(tpl, "setFilter", SetFilter);
     //SetPrototypeMethod(tpl, "onFrame", onFrame);
     //SetPrototypeMethod(tpl, "send", send);
@@ -117,6 +118,19 @@ NAN_METHOD(CANWrap::Send)
     self->doPoll();
 }
 
+NAN_METHOD(CANWrap::Close)
+{
+    CANWrap* self = ObjectWrap::Unwrap<CANWrap>(info.Holder());
+    assert(self);
+
+    uv_poll_stop(&self->m_uvHandle);
+    uv_close(reinterpret_cast<uv_handle_t*>(&self->m_uvHandle),
+             [](auto* handle) {
+                 auto* can = reinterpret_cast<CANWrap*>(handle->data);
+                 close(can->m_socket);
+             });
+}
+
 NAN_METHOD(CANWrap::OnSent)
 {
     // onSent(callback)
@@ -156,14 +170,13 @@ void CANWrap::pollCallback(int status, int events) noexcept
             const auto err = doSend() < 0 ? errno : 0;
 
             m_pollEvents &= ~UV_WRITABLE;
+            doPoll();
             if (m_sentCallback)
             {
                 Nan::HandleScope scope;
                 Local<Value> argv[1] = {Nan::New(err)};
                 m_sentCallback->Call(1, argv);
             }
-
-            doPoll();
         }
         else if (events & UV_READABLE)
         {

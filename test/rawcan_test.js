@@ -50,6 +50,7 @@ describe('can Socket', () => {
         if (err) {
           throw Error('Error: ' + err);
         }
+        sock.close();
         done();
       });
     });
@@ -66,7 +67,7 @@ describe('can Socket', () => {
       const server = new can.Socket('vcan0');
       server.on('message', (id, buffer) => { done(); });
       const client = new can.Socket('vcan0');
-      client.send(0x34, new Buffer([0xDE, 0xAD, 0xBE, 0xEF]));
+      client.send(86, 'hello');
     });
   });
 });
