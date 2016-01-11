@@ -6,6 +6,7 @@
 #include <sys/ioctl.h>
 #include <linux/can/raw.h>
 #include <fcntl.h>
+#include <errno.h>
 #include <unistd.h>
 #include <node.h>
 #include <algorithm>
