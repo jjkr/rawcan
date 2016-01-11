@@ -41,7 +41,7 @@ private:
     can_frame m_recvBuffer;
 
     can_frame m_sendBuffer;
-    int m_pollEvents;
+    int m_pollEvents = 0;
 };
 
 NODE_MODULE(can_wrap, CANWrap::Initialize);

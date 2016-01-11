@@ -12,13 +12,14 @@
 #include <algorithm>
 #include <cassert>
 #include <cstdint>
-#include <cstring>
 
 using Nan::Callback;
 using v8::Local;
 using v8::Function;
 using v8::FunctionTemplate;
 using v8::Value;
+using std::begin;
+using std::copy_n;
 
 namespace rawcan
 {
@@ -44,8 +45,7 @@ NAN_MODULE_INIT(CANWrap::Initialize)
              Nan::GetFunction(tpl).ToLocalChecked());
 }
 
-CANWrap::CANWrap()
-    : m_socket(socket(PF_CAN, SOCK_RAW, CAN_RAW)), m_pollEvents(0)
+CANWrap::CANWrap() : m_socket(socket(PF_CAN, SOCK_RAW, CAN_RAW))
 {
     // set nonblocking mode
     int flags = fcntl(m_socket, F_GETFL, 0);
@@ -58,7 +58,7 @@ CANWrap::CANWrap()
 NAN_METHOD(CANWrap::New)
 {
     assert(info.IsConstructCall());
-    CANWrap* can = new CANWrap();
+    auto* can = new CANWrap();
     can->Wrap(info.This());
 }
 
@@ -69,13 +69,13 @@ NAN_METHOD(CANWrap::Bind)
 
     Nan::Utf8String iface(info[0]->ToString());
 
-    ifreq ifr = ifreq();
+    auto ifr = ifreq();
     strcpy(ifr.ifr_name, *iface);
-    int err = ioctl(self->m_socket, SIOCGIFINDEX, &ifr);
+    auto err = ioctl(self->m_socket, SIOCGIFINDEX, &ifr);
 
     if (err == 0)
     {
-        sockaddr_can canAddr = sockaddr_can();
+        auto canAddr = sockaddr_can();
         canAddr.can_family = AF_CAN;
         canAddr.can_ifindex = ifr.ifr_ifindex;
 
@@ -96,16 +96,16 @@ NAN_METHOD(CANWrap::Send)
     assert(info[0]->IsUint32());
     assert(node::Buffer::HasInstance(info[1]));
 
-    CANWrap* self = ObjectWrap::Unwrap<CANWrap>(info.Holder());
+    auto* self = ObjectWrap::Unwrap<CANWrap>(info.Holder());
     assert(self);
 
-    can_frame& sendBuffer = self->m_sendBuffer;
-    uint32_t id = Nan::To<uint32_t>(info[0]).FromJust();
+    auto& sendBuffer = self->m_sendBuffer;
+    auto id = Nan::To<uint32_t>(info[0]).FromJust();
     sendBuffer.can_id = id;
 
-    size_t length = node::Buffer::Length(info[1]);
+    auto length = node::Buffer::Length(info[1]);
     sendBuffer.can_dlc = length;
-    memcpy(sendBuffer.data, node::Buffer::Data(info[1]), length);
+    copy_n(node::Buffer::Data(info[1]), length, begin(sendBuffer.data));
 
     self->m_pollEvents |= UV_WRITABLE;
     self->doPoll();
@@ -113,7 +113,7 @@ NAN_METHOD(CANWrap::Send)
 
 NAN_METHOD(CANWrap::Close)
 {
-    CANWrap* self = ObjectWrap::Unwrap<CANWrap>(info.Holder());
+    auto* self = ObjectWrap::Unwrap<CANWrap>(info.Holder());
     assert(self);
 
     uv_poll_stop(&self->m_uvHandle);
@@ -131,10 +131,10 @@ NAN_METHOD(CANWrap::SetFilter)
     assert(info[0]->IsUint32());
     assert(info[1]->IsUint32());
 
-    uint32_t filter = Nan::To<uint32_t>(info[0]).FromJust();
-    uint32_t mask = Nan::To<uint32_t>(info[1]).FromJust();
+    auto filter = Nan::To<uint32_t>(info[0]).FromJust();
+    auto mask = Nan::To<uint32_t>(info[1]).FromJust();
 
-    CANWrap* self = ObjectWrap::Unwrap<CANWrap>(info.Holder());
+    auto* self = ObjectWrap::Unwrap<CANWrap>(info.Holder());
     assert(self);
 
     struct can_filter cf[1];
@@ -148,7 +148,7 @@ NAN_METHOD(CANWrap::OnSent)
     // onSent(callback)
     assert(1 == info.Length());
 
-    CANWrap* self = ObjectWrap::Unwrap<CANWrap>(info.Holder());
+    auto* self = ObjectWrap::Unwrap<CANWrap>(info.Holder());
     assert(self);
 
     self->m_sentCallback.SetFunction(info[0].As<v8::Function>());
@@ -159,7 +159,7 @@ NAN_METHOD(CANWrap::OnMessage)
     // onMessage(callback)
     assert(1 == info.Length());
 
-    CANWrap* self = ObjectWrap::Unwrap<CANWrap>(info.Holder());
+    auto* self = ObjectWrap::Unwrap<CANWrap>(info.Holder());
     assert(self);
 
     self->m_messageCallback.SetFunction(info[0].As<v8::Function>());
@@ -167,7 +167,7 @@ NAN_METHOD(CANWrap::OnMessage)
 
 NAN_METHOD(CANWrap::Ref)
 {
-    CANWrap* self = ObjectWrap::Unwrap<CANWrap>(info.Holder());
+    auto* self = ObjectWrap::Unwrap<CANWrap>(info.Holder());
     assert(self);
 
     uv_ref(reinterpret_cast<uv_handle_t*>(&self->m_uvHandle));
@@ -175,7 +175,7 @@ NAN_METHOD(CANWrap::Ref)
 
 NAN_METHOD(CANWrap::UnRef)
 {
-    CANWrap* self = ObjectWrap::Unwrap<CANWrap>(info.Holder());
+    auto* self = ObjectWrap::Unwrap<CANWrap>(info.Holder());
     assert(self);
 
     uv_unref(reinterpret_cast<uv_handle_t*>(&self->m_uvHandle));
@@ -184,7 +184,7 @@ NAN_METHOD(CANWrap::UnRef)
 void CANWrap::uvPollCallback(uv_poll_t* pollHandle, int status,
                              int events)
 {
-    CANWrap* self = static_cast<CANWrap*>(pollHandle->data);
+    auto* self = static_cast<CANWrap*>(pollHandle->data);
     assert(self);
     self->pollCallback(status, events);
 }
