@@ -8,9 +8,9 @@ node_js:
   - "0.12"
   - "0.10"
 before_install:
-  - modprobe vcan
-  - ip link add type vcan
-  - ip link set up vcan0
+  - sudo modprobe vcan
+  - sudo ip link add type vcan
+  - sudo ip link set up vcan0
 compiler: clang-3.6
 env:
   - CXX=clang-3.6
