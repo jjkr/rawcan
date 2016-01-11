@@ -34,6 +34,7 @@ var Socket = function (_EventEmitter) {
 
     _this._handle = new CANWrap();
     _this._receiving = false;
+    _this._sendQueue = [];
     return _this;
   }
 
@@ -48,7 +49,34 @@ var Socket = function (_EventEmitter) {
       if (err != 0) {
         throw new Error('failed to bind: ' + err);
       }
+
+      //this._handle.recvStart();
+      this._receiving = true;
+
+      return this;
     }
+  }, {
+    key: 'send',
+    value: function send(id, buffer, callback) {
+      var sending = this._sendQueue.length > 0;
+      this._sendQueue.push([id, buffer, callback]);
+
+      if (typeof buffer === 'string') {
+        buffer = new Buffer(buffer);
+      } else if (!(buffer instanceof Buffer)) {
+        throw TypeError('Second argument must be a Buffer or String');
+      }
+
+      // normalize callback so it is either a function or undefined
+      if (typeof callback !== 'function') {
+        callback = undefined;
+      }
+
+      if (!sending) {}
+    }
+  }, {
+    key: '_onSent',
+    value: function _onSent(err) {}
   }]);
 
   return Socket;
