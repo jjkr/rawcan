@@ -32,8 +32,8 @@ private:
 
     static Nan::Persistent<v8::Function> s_constructor;
 
-    Nan::Persistent<v8::Function> m_sentCallback;
-    Nan::Persistent<v8::Function> m_messageCallback;
+    Nan::Callback m_sentCallback;
+    Nan::Callback m_messageCallback;
 
     const int m_socket;
     uv_poll_t m_uvHandle;

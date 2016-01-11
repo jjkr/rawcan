@@ -152,7 +152,7 @@ NAN_METHOD(CANWrap::OnSent)
     CANWrap* self = ObjectWrap::Unwrap<CANWrap>(info.Holder());
     assert(self);
 
-    self->m_sentCallback.Reset(info[0].As<v8::Function>());
+    self->m_sentCallback.SetFunction(info[0].As<v8::Function>());
 }
 
 NAN_METHOD(CANWrap::OnMessage)
@@ -163,7 +163,7 @@ NAN_METHOD(CANWrap::OnMessage)
     CANWrap* self = ObjectWrap::Unwrap<CANWrap>(info.Holder());
     assert(self);
 
-    self->m_messageCallback.Reset(info[0].As<v8::Function>());
+    self->m_messageCallback.SetFunction(info[0].As<v8::Function>());
 }
 
 NAN_METHOD(CANWrap::Ref)
@@ -200,11 +200,11 @@ void CANWrap::pollCallback(int status, int events)
 
             m_pollEvents &= ~UV_WRITABLE;
             doPoll();
-            if (m_sentCallback.IsEmpty())
+            if (!m_sentCallback.IsEmpty())
             {
                 Nan::HandleScope scope;
                 Local<Value> argv[1] = {Nan::New(err)};
-                Nan::Callback(Nan::New(m_sentCallback)).Call(1, argv);
+                m_sentCallback.Call(1, argv);
             }
         }
         else if (events & UV_READABLE)
@@ -214,7 +214,7 @@ void CANWrap::pollCallback(int status, int events)
             {
                 // handle error
             }
-            else if (m_messageCallback.IsEmpty())
+            else if (!m_messageCallback.IsEmpty())
             {
                 Nan::HandleScope scope;
                 Local<Value> argv[] = {
@@ -222,7 +222,7 @@ void CANWrap::pollCallback(int status, int events)
                     Nan::NewBuffer(reinterpret_cast<char*>(&m_recvBuffer.data),
                                    m_recvBuffer.can_dlc)
                         .ToLocalChecked()};
-                Nan::Callback(Nan::New(m_messageCallback)).Call(2, argv);
+                m_messageCallback.Call(2, argv);
             }
         }
     }
