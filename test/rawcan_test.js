@@ -1,9 +1,6 @@
 import {expect} from 'chai';
 import can from '..';
 
-//import segvhandler from 'segfault-handler';
-//segvhandler.registerHandler("crash.log");
-
 describe('can Socket', () => {
   describe('constructor', () => {
     it('constructs default', () => {
