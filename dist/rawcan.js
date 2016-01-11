@@ -52,7 +52,6 @@ var Socket = function (_EventEmitter) {
   _createClass(Socket, [{
     key: 'bind',
     value: function bind(iface) {
-      console.log('js bind');
       if (this._bound) {
         throw new Error('Socket is already bound');
       }
@@ -71,7 +70,6 @@ var Socket = function (_EventEmitter) {
   }, {
     key: 'send',
     value: function send(id, buffer, callback) {
-      console.log('js send');
       if (typeof buffer === 'string') {
         buffer = new Buffer(buffer);
       } else if (!(buffer instanceof Buffer)) {
@@ -91,20 +89,16 @@ var Socket = function (_EventEmitter) {
       if (!sending) {
         this._handle.send(id, buffer);
       }
-
-      console.log('js send done');
     }
   }, {
     key: 'setFilter',
     value: function setFilter(filter, mask) {
-      console.log('js setFilter');
       this._healthCheck();
       this._handle.setFilter(filter, mask);
     }
   }, {
     key: 'close',
     value: function close() {
-      console.log('js close');
       this._healthCheck();
       this._handle.close();
       this._handle = undefined;
@@ -125,7 +119,6 @@ var Socket = function (_EventEmitter) {
   }, {
     key: '_onSent',
     value: function _onSent(err) {
-      console.log('js onSent');
       var sent = this._sendQueue[0];
       if (sent.callback) {
         sent.callback(err);
@@ -135,7 +128,6 @@ var Socket = function (_EventEmitter) {
       if (this._sendQueue.length > 0) {
         this._handle.send(next.id, next.buffer);
       }
-      console.log('js onSent done');
     }
   }, {
     key: '_healthCheck',

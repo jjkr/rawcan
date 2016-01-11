@@ -41,7 +41,7 @@ private:
     Nan::Callback m_errorCallback;
 
     int m_socket;
-    uv_poll_t* m_uvHandle;
+    uv_poll_t m_uvHandle;
     can_frame m_recvBuffer;
     can_frame m_sendBuffer;
     int m_pollEvents = 0;
