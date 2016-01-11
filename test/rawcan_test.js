@@ -4,8 +4,11 @@ import can from '..';
 describe('can Socket', () => {
   describe('constructor', () => {
     it('constructs default', () => {
+      console.log('constructing');
       const sock = new can.Socket();
+      console.log('constructed');
       sock.close();
+      console.log('closed');
     });
     it('constructs with interface', () => {
       const sock = new can.Socket('vcan0');
