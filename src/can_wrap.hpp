@@ -12,6 +12,7 @@ public:
 
 private:
     CANWrap();
+    ~CANWrap();
 
     static NAN_METHOD(New);
     static NAN_METHOD(Bind);
@@ -30,6 +31,7 @@ private:
     int doPoll();
     int doSend();
     int doRecv();
+    void doClose();
     void callErrorCallback(int err);
 
     static Nan::Persistent<v8::Function> s_constructor;
@@ -38,13 +40,12 @@ private:
     Nan::Callback m_messageCallback;
     Nan::Callback m_errorCallback;
 
-    const int m_socket;
-    uv_poll_t m_uvHandle;
-
+    int m_socket;
+    uv_poll_t* m_uvHandle;
     can_frame m_recvBuffer;
-
     can_frame m_sendBuffer;
     int m_pollEvents = 0;
+    bool m_closed = false;
 };
 
 NODE_MODULE(can_wrap, CANWrap::Initialize);

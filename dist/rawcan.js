@@ -31,11 +31,15 @@ var Socket = function (_EventEmitter) {
     var _this = _possibleConstructorReturn(this, Object.getPrototypeOf(Socket).call(this));
 
     _this._handle = new CANWrap();
+    _this._handle.owner = _this;
     _this._handle.onSent(function (err) {
       _this._onSent(err);
     });
     _this._handle.onMessage(function (id, buffer) {
       _this.emit('message', id, buffer);
+    });
+    _this._handle.onError(function (err) {
+      _this.emit('error', err);
     });
     _this._bound = false;
     _this._sendQueue = [];
@@ -48,9 +52,12 @@ var Socket = function (_EventEmitter) {
   _createClass(Socket, [{
     key: 'bind',
     value: function bind(iface) {
+      console.log('js bind');
       if (this._bound) {
         throw new Error('Socket is already bound');
       }
+
+      this._healthCheck();
 
       var err = this._handle.bind(iface);
       if (err != 0) {
@@ -64,6 +71,7 @@ var Socket = function (_EventEmitter) {
   }, {
     key: 'send',
     value: function send(id, buffer, callback) {
+      console.log('js send');
       if (typeof buffer === 'string') {
         buffer = new Buffer(buffer);
       } else if (!(buffer instanceof Buffer)) {
@@ -75,37 +83,49 @@ var Socket = function (_EventEmitter) {
         callback = undefined;
       }
 
+      this._healthCheck();
+
       var sending = this._sendQueue.length > 0;
       this._sendQueue.push({ id: id, buffer: buffer, callback: callback });
 
       if (!sending) {
         this._handle.send(id, buffer);
       }
+
+      console.log('js send done');
     }
   }, {
     key: 'setFilter',
     value: function setFilter(filter, mask) {
+      console.log('js setFilter');
+      this._healthCheck();
       this._handle.setFilter(filter, mask);
     }
   }, {
     key: 'close',
     value: function close() {
+      console.log('js close');
+      this._healthCheck();
       this._handle.close();
-      //this._handle = undefined;
+      this._handle = undefined;
+      //this.emit('close');
     }
   }, {
     key: 'ref',
     value: function ref() {
+      this._healthCheck();
       this._handle.ref();
     }
   }, {
     key: 'unref',
     value: function unref() {
+      this._healthCheck();
       this._handle.unref();
     }
   }, {
     key: '_onSent',
     value: function _onSent(err) {
+      console.log('js onSent');
       var sent = this._sendQueue[0];
       if (sent.callback) {
         sent.callback(err);
@@ -114,6 +134,14 @@ var Socket = function (_EventEmitter) {
       var next = this._sendQueue[0];
       if (this._sendQueue.length > 0) {
         this._handle.send(next.id, next.buffer);
+      }
+      console.log('js onSent done');
+    }
+  }, {
+    key: '_healthCheck',
+    value: function _healthCheck() {
+      if (!this._handle) {
+        throw new Error('Not running');
       }
     }
   }, {
