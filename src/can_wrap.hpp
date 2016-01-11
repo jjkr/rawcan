@@ -2,7 +2,6 @@
 #include <linux/can.h>
 #include <nan.h>
 #include <v8.h>
-#include <memory>
 
 namespace rawcan
 {
@@ -12,7 +11,7 @@ public:
     static NAN_MODULE_INIT(Initialize);
 
 private:
-    CANWrap() noexcept;
+    CANWrap();
 
     static NAN_METHOD(New);
     static NAN_METHOD(Bind);
@@ -25,16 +24,16 @@ private:
     static NAN_METHOD(UnRef);
 
     static void uvPollCallback(uv_poll_t* pollHandle, int status,
-                               int events) noexcept;
-    void pollCallback(int status, int events) noexcept;
-    int doPoll() noexcept;
-    int doSend() noexcept;
-    int doRecv() noexcept;
+                               int events);
+    void pollCallback(int status, int events);
+    int doPoll();
+    int doSend();
+    int doRecv();
 
     static Nan::Persistent<v8::Function> s_constructor;
 
-    std::unique_ptr<Nan::Callback> m_sentCallback;
-    std::unique_ptr<Nan::Callback> m_messageCallback;
+    Nan::Persistent<v8::Function> m_sentCallback;
+    Nan::Persistent<v8::Function> m_messageCallback;
 
     const int m_socket;
     uv_poll_t m_uvHandle;
@@ -42,7 +41,7 @@ private:
     can_frame m_recvBuffer;
 
     can_frame m_sendBuffer;
-    int m_pollEvents = 0;
+    int m_pollEvents;
 };
 
 NODE_MODULE(CANWrap, CANWrap::Initialize);

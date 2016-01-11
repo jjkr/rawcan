@@ -20,7 +20,6 @@ using v8::FunctionTemplate;
 using v8::Value;
 using std::begin;
 using std::copy_n;
-using std::make_unique;
 
 namespace rawcan
 {
@@ -46,10 +45,11 @@ NAN_MODULE_INIT(CANWrap::Initialize)
              Nan::GetFunction(tpl).ToLocalChecked());
 }
 
-CANWrap::CANWrap() noexcept : m_socket(socket(PF_CAN, SOCK_RAW, CAN_RAW))
+CANWrap::CANWrap()
+    : m_socket(socket(PF_CAN, SOCK_RAW, CAN_RAW)), m_pollEvents(0)
 {
     // set nonblocking mode
-    auto flags = fcntl(m_socket, F_GETFL, 0);
+    int flags = fcntl(m_socket, F_GETFL, 0);
     fcntl(m_socket, F_SETFL, flags | O_NONBLOCK);
 
     uv_poll_init_socket(uv_default_loop(), &m_uvHandle, m_socket);
@@ -59,7 +59,7 @@ CANWrap::CANWrap() noexcept : m_socket(socket(PF_CAN, SOCK_RAW, CAN_RAW))
 NAN_METHOD(CANWrap::New)
 {
     assert(info.IsConstructCall());
-    auto* can = new CANWrap();
+    CANWrap* can = new CANWrap();
     can->Wrap(info.This());
 }
 
@@ -70,13 +70,13 @@ NAN_METHOD(CANWrap::Bind)
 
     Nan::Utf8String iface(info[0]->ToString());
 
-    auto ifr = ifreq();
+    ifreq ifr = ifreq();
     strcpy(ifr.ifr_name, *iface);
-    auto err = ioctl(self->m_socket, SIOCGIFINDEX, &ifr);
+    int err = ioctl(self->m_socket, SIOCGIFINDEX, &ifr);
 
     if (err == 0)
     {
-        auto canAddr = sockaddr_can();
+        sockaddr_can canAddr = sockaddr_can();
         canAddr.can_family = AF_CAN;
         canAddr.can_ifindex = ifr.ifr_ifindex;
 
@@ -100,14 +100,13 @@ NAN_METHOD(CANWrap::Send)
     CANWrap* self = ObjectWrap::Unwrap<CANWrap>(info.Holder());
     assert(self);
 
-    auto& sendBuffer = self->m_sendBuffer;
-    auto id = Nan::To<uint32_t>(info[0]).FromJust();
+    can_frame& sendBuffer = self->m_sendBuffer;
+    uint32_t id = Nan::To<uint32_t>(info[0]).FromJust();
     sendBuffer.can_id = id;
 
-    auto nodeBuffer = info[1];
-    auto length = node::Buffer::Length(nodeBuffer);
+    size_t length = node::Buffer::Length(info[1]);
     sendBuffer.can_dlc = length;
-    std::copy_n(node::Buffer::Data(nodeBuffer), length, begin(sendBuffer.data));
+    std::copy_n(node::Buffer::Data(info[1]), length, begin(sendBuffer.data));
 
     self->m_pollEvents |= UV_WRITABLE;
     self->doPoll();
@@ -120,8 +119,8 @@ NAN_METHOD(CANWrap::Close)
 
     uv_poll_stop(&self->m_uvHandle);
     uv_close(reinterpret_cast<uv_handle_t*>(&self->m_uvHandle),
-             [](auto* handle) {
-                 auto* can = reinterpret_cast<CANWrap*>(handle->data);
+             [](uv_handle_t* handle) {
+                 CANWrap* can = reinterpret_cast<CANWrap*>(handle->data);
                  close(can->m_socket);
              });
 }
@@ -133,8 +132,8 @@ NAN_METHOD(CANWrap::SetFilter)
     assert(info[0]->IsUint32());
     assert(info[1]->IsUint32());
 
-    auto filter = Nan::To<uint32_t>(info[0]).FromJust();
-    auto mask = Nan::To<uint32_t>(info[1]).FromJust();
+    uint32_t filter = Nan::To<uint32_t>(info[0]).FromJust();
+    uint32_t mask = Nan::To<uint32_t>(info[1]).FromJust();
 
     CANWrap* self = ObjectWrap::Unwrap<CANWrap>(info.Holder());
     assert(self);
@@ -153,7 +152,7 @@ NAN_METHOD(CANWrap::OnSent)
     CANWrap* self = ObjectWrap::Unwrap<CANWrap>(info.Holder());
     assert(self);
 
-    self->m_sentCallback = make_unique<Callback>(info[0].As<v8::Function>());
+    self->m_sentCallback.Reset(info[0].As<v8::Function>());
 }
 
 NAN_METHOD(CANWrap::OnMessage)
@@ -164,7 +163,7 @@ NAN_METHOD(CANWrap::OnMessage)
     CANWrap* self = ObjectWrap::Unwrap<CANWrap>(info.Holder());
     assert(self);
 
-    self->m_messageCallback = make_unique<Callback>(info[0].As<v8::Function>());
+    self->m_messageCallback.Reset(info[0].As<v8::Function>());
 }
 
 NAN_METHOD(CANWrap::Ref)
@@ -184,38 +183,38 @@ NAN_METHOD(CANWrap::UnRef)
 }
 
 void CANWrap::uvPollCallback(uv_poll_t* pollHandle, int status,
-                             int events) noexcept
+                             int events)
 {
-    auto* self = static_cast<CANWrap*>(pollHandle->data);
+    CANWrap* self = static_cast<CANWrap*>(pollHandle->data);
     assert(self);
     self->pollCallback(status, events);
 }
 
-void CANWrap::pollCallback(int status, int events) noexcept
+void CANWrap::pollCallback(int status, int events)
 {
     if (status == 0)
     {
         if (events & UV_WRITABLE)
         {
-            const auto err = doSend() < 0 ? errno : 0;
+            const int err = doSend() < 0 ? errno : 0;
 
             m_pollEvents &= ~UV_WRITABLE;
             doPoll();
-            if (m_sentCallback)
+            if (m_sentCallback.IsEmpty())
             {
                 Nan::HandleScope scope;
                 Local<Value> argv[1] = {Nan::New(err)};
-                m_sentCallback->Call(1, argv);
+                Nan::Callback(Nan::New(m_sentCallback)).Call(1, argv);
             }
         }
         else if (events & UV_READABLE)
         {
-            const auto err = doRecv();
+            const int err = doRecv();
             if (err < 0)
             {
                 // handle error
             }
-            else if (m_messageCallback)
+            else if (m_messageCallback.IsEmpty())
             {
                 Nan::HandleScope scope;
                 Local<Value> argv[] = {
@@ -223,7 +222,7 @@ void CANWrap::pollCallback(int status, int events) noexcept
                     Nan::NewBuffer(reinterpret_cast<char*>(&m_recvBuffer.data),
                                    m_recvBuffer.can_dlc)
                         .ToLocalChecked()};
-                m_messageCallback->Call(2, argv);
+                Nan::Callback(Nan::New(m_messageCallback)).Call(2, argv);
             }
         }
     }
@@ -233,7 +232,7 @@ void CANWrap::pollCallback(int status, int events) noexcept
     }
 }
 
-int CANWrap::doPoll() noexcept
+int CANWrap::doPoll()
 {
     if (m_pollEvents)
     {
@@ -245,12 +244,12 @@ int CANWrap::doPoll() noexcept
     }
 }
 
-int CANWrap::doSend() noexcept
+int CANWrap::doSend()
 {
     return ::send(m_socket, &m_sendBuffer, sizeof(m_sendBuffer), 0);
 }
 
-int CANWrap::doRecv() noexcept
+int CANWrap::doRecv()
 {
     return ::recv(m_socket, &m_recvBuffer, sizeof(m_recvBuffer), 0);
 }
