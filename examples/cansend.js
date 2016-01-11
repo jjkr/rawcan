@@ -1,4 +1,9 @@
-const rawcan = require('..');
+import can from '..';
 
-//var sock = rawcan.newSocket('vcan0');
-//sock.setFilter(0x23, 0x43);
+const server = new can.Socket('vcan0');
+
+server.unref();
+
+server.on('message', (id, buffer) => {
+  console.log('[' + id.toString(16) + '] ' + buffer.toString('hex'));
+});

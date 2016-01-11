@@ -10,12 +10,8 @@
 #include <node.h>
 #include <algorithm>
 #include <cassert>
+#include <cstdint>
 #include <utility>
-
-
-// TODO
-#include <iostream>
-using namespace std;
 
 using Nan::Callback;
 using v8::Local;
@@ -41,10 +37,9 @@ NAN_MODULE_INIT(CANWrap::Initialize)
     SetPrototypeMethod(tpl, "bind", Bind);
     SetPrototypeMethod(tpl, "send", Send);
     SetPrototypeMethod(tpl, "close", Close);
-    //SetPrototypeMethod(tpl, "setFilter", SetFilter);
-    //SetPrototypeMethod(tpl, "onFrame", onFrame);
-    //SetPrototypeMethod(tpl, "send", send);
-    //SetPrototypeMethod(tpl, "stop", stop);
+    SetPrototypeMethod(tpl, "setFilter", SetFilter);
+    SetPrototypeMethod(tpl, "ref", Ref);
+    SetPrototypeMethod(tpl, "unref", UnRef);
 
     s_constructor.Reset(Nan::GetFunction(tpl).ToLocalChecked());
     Nan::Set(target, Nan::New("CANWrap").ToLocalChecked(),
@@ -131,6 +126,25 @@ NAN_METHOD(CANWrap::Close)
              });
 }
 
+NAN_METHOD(CANWrap::SetFilter)
+{
+    // setFilter(filter, mask)
+    assert(2 == info.Length());
+    assert(info[0]->IsUint32());
+    assert(info[1]->IsUint32());
+
+    auto filter = Nan::To<uint32_t>(info[0]).FromJust();
+    auto mask = Nan::To<uint32_t>(info[1]).FromJust();
+
+    CANWrap* self = ObjectWrap::Unwrap<CANWrap>(info.Holder());
+    assert(self);
+
+    struct can_filter cf[1];
+    cf[0].can_id = filter;
+    cf[0].can_mask = mask;
+    setsockopt(self->m_socket, SOL_CAN_RAW, CAN_RAW_FILTER, &cf, sizeof(cf));
+}
+
 NAN_METHOD(CANWrap::OnSent)
 {
     // onSent(callback)
@@ -151,6 +165,22 @@ NAN_METHOD(CANWrap::OnMessage)
     assert(self);
 
     self->m_messageCallback = make_unique<Callback>(info[0].As<v8::Function>());
+}
+
+NAN_METHOD(CANWrap::Ref)
+{
+    CANWrap* self = ObjectWrap::Unwrap<CANWrap>(info.Holder());
+    assert(self);
+
+    uv_ref(reinterpret_cast<uv_handle_t*>(&self->m_uvHandle));
+}
+
+NAN_METHOD(CANWrap::UnRef)
+{
+    CANWrap* self = ObjectWrap::Unwrap<CANWrap>(info.Holder());
+    assert(self);
+
+    uv_unref(reinterpret_cast<uv_handle_t*>(&self->m_uvHandle));
 }
 
 void CANWrap::uvPollCallback(uv_poll_t* pollHandle, int status,

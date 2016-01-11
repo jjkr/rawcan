@@ -86,12 +86,24 @@ var Socket = function (_EventEmitter) {
     }
   }, {
     key: 'setFilter',
-    value: function setFilter(filter, mask) {}
+    value: function setFilter(filter, mask) {
+      this._handle.setFilter(filter, mask);
+    }
   }, {
     key: 'close',
     value: function close() {
       this._handle.close();
-      this._handle = undefined;
+      //this._handle = undefined;
+    }
+  }, {
+    key: 'ref',
+    value: function ref() {
+      this._handle.ref();
+    }
+  }, {
+    key: 'unref',
+    value: function unref() {
+      this._handle.unref();
     }
   }, {
     key: '_onSent',

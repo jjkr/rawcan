@@ -65,9 +65,31 @@ describe('can Socket', () => {
   describe('recv', () => {
     it('receives a message', (done) => {
       const server = new can.Socket('vcan0');
-      server.on('message', (id, buffer) => { done(); });
+      server.on('message', (id, buffer) => {
+        server.close();
+        done();
+      });
       const client = new can.Socket('vcan0');
       client.send(86, 'hello');
+    });
+  });
+
+  describe('setFilter', () => {
+    it('filters frames', (done) => {
+      const filteredId = 86;
+      const server = new can.Socket('vcan0');
+      server.setFilter(filteredId, 0xff);
+      server.on('message', (id, buffer) => {
+        server.close();
+        expect(id).to.equal(filteredId);
+        done();
+      });
+
+      const client = new can.Socket('vcan0');
+      client.send(1, 'foo');
+      client.send(99, 'bar');
+      client.send(filteredId, 'hello');
+      client.send(39, 'bar');
     });
   });
 });
