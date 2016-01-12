@@ -1,4 +1,4 @@
-const can = require('..').default;
+const can = require('..');
 
 const server = can.createSocket('vcan0');
 server.on('message', (id, buffer) => {
