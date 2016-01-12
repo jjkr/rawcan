@@ -96,6 +96,12 @@ var Socket = exports.Socket = function (_EventEmitter) {
     key: 'setFilter',
     value: function setFilter(filter, mask) {
       this._healthCheck();
+      if (typeof filter !== 'number') {
+        throw TypeError('filter must be a number');
+      }
+      if (typeof mask !== 'number') {
+        throw TypeError('mask must be a number');
+      }
       this._handle.setFilter(filter, mask);
     }
   }, {
