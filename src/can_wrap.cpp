@@ -14,10 +14,6 @@
 #include <cstdint>
 #include <cstdlib>
 
-// TODO JJK
-#include <iostream>
-using namespace std;
-
 using Nan::Callback;
 using v8::Local;
 using v8::Function;

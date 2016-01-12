@@ -5,6 +5,8 @@ var _createClass = function () { function defineProperties(target, props) { for 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.ERR_MASK = exports.EFF_MASK = exports.SFF_MASK = exports.ERR_FLAG = exports.RTR_FLAG = exports.EFF_FLAG = exports.Socket = undefined;
+exports.createSocket = createSocket;
 
 var _events = require('events');
 
@@ -22,7 +24,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 var CANWrap = (0, _bindings2.default)('can_wrap.node').CANWrap;
 
-var Socket = function (_EventEmitter) {
+var Socket = exports.Socket = function (_EventEmitter) {
   _inherits(Socket, _EventEmitter);
 
   function Socket(iface) {
@@ -146,17 +148,14 @@ var Socket = function (_EventEmitter) {
   return Socket;
 }(_events.EventEmitter);
 
-exports.default = {
-  EFF_FLAG: 0x80000000, // extended frame format
-  RTR_FLAG: 0x40000000, // remote transmission request
-  ERR_FLAG: 0x20000000, // error
+function createSocket(iface) {
+  return new Socket(iface);
+}
 
-  SFF_MASK: 0x7FF, // standard frame format - 11 bits
-  EFF_MASK: 0x1FFFFFFF, // extended frame format - 29 bits
-  ERR_MASK: 0x1FFFFFFF,
+var EFF_FLAG = exports.EFF_FLAG = 0x80000000; // extended frame format
+var RTR_FLAG = exports.RTR_FLAG = 0x40000000; // remote transmission request
+var ERR_FLAG = exports.ERR_FLAG = 0x20000000; // error
 
-  Socket: Socket,
-  createSocket: function createSocket(iface) {
-    return new Socket(iface);
-  }
-};
+var SFF_MASK = exports.SFF_MASK = 0x7FF; // standard frame format - 11 bits
+var EFF_MASK = exports.EFF_MASK = 0x1FFFFFFF; // extended frame format - 29 bits
+var ERR_MASK = exports.ERR_MASK = 0x1FFFFFFF;

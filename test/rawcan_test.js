@@ -1,5 +1,5 @@
 import {expect} from 'chai';
-import can from '..';
+import * as can from '..';
 
 describe('can Socket', () => {
   describe('constructor', () => {
