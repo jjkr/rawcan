@@ -3,4 +3,5 @@ import { EventEmitter } from 'events';
 export declare class Socket extends EventEmitter {
     private _handle;
     constructor(iface: string);
+    _onSent(err: number): void;
 }
