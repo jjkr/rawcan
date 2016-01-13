@@ -3,7 +3,7 @@
     "module": "commonjs",
     "target": "es5",
     "declaration": true,
-    "outDir": "dist",
+    "outDir": "build",
     "sourceMap": true,
     "noImplicitAny": false,
     "removeComments": true,
@@ -12,7 +12,6 @@
   "exclude": [
     "node_modules",
     "build",
-    "test",
     "dist"
   ]
 }
