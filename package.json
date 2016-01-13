@@ -7,6 +7,7 @@
     "email": "joe.kramer.cu@gmail.com"
   },
   "main": "dist/rawcan.js",
+  "typings": "dist/lib/rawcan.d.ts",
   "scripts": {
     "configure": "node-gyp configure",
     "build:gyp": "node-gyp build",

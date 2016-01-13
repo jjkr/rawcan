@@ -3,7 +3,9 @@
     "module": "commonjs",
     "target": "es5",
     "declaration": true,
-    "outDir": "dist",
+    "outDir": "build",
+    "outFile": "dist/rawcan.js",
+    "sourceMap": true,
     "noImplicitAny": false,
     "removeComments": true,
     "preserveConstEnums": true
@@ -11,6 +13,7 @@
   "exclude": [
     "node_modules",
     "build",
+    "test",
     "dist"
   ]
 }

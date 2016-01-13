@@ -1,4 +1,4 @@
-/// <reference path="../typings/tsd.d.ts"/>
+/// <library path="../typings/tsd.d.ts"/>
 import {EventEmitter} from 'events';
 /// <reference path="./can_wrap.d.ts"/>
 import {CANWrap} from './can_wrap';
@@ -98,7 +98,7 @@ export class Socket extends EventEmitter {
   }
 }
 
-export function createSocket(iface: string) { return new Socket(iface); }
+export function createSocket(iface?: string) { return new Socket(iface); }
 
 export const EFF_FLAG : number = 0x80000000; // extended frame format
 export const RTR_FLAG : number = 0x40000000; // remote transmission request
