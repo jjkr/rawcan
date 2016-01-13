@@ -4,7 +4,7 @@
     "target": "es5",
     "declaration": true,
     "outDir": "build",
-    "sourceMap": true,
+    "sourceMap": false,
     "noImplicitAny": false,
     "removeComments": true,
     "preserveConstEnums": true
