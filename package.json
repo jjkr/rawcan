@@ -16,7 +16,7 @@
     "build:js":
       "mkdir -p build/lib && ln -sf ../../dist/can_wrap.js build/lib && tsc",
     "build": "npm run build:gyp && npm run build:js",
-    "preversion": "npm run build:js && cp build/lib/rawcan.{js,d.ts} dist/",
+    "version": "cp build/lib/rawcan.{js,d.ts} dist",
     "watch": "npm run build:js -- --watch",
     "test": "NODE_ENV=test mocha build/test --recursive"
   },

@@ -14,6 +14,7 @@ var Socket = (function (_super) {
         this._handle.onSent(function (err) { _this._onSent(err); });
         this._handle.onMessage(function (id, buffer) { _this.emit('message', id, buffer); });
         this._handle.onError(function (err) { _this.emit('error', err); });
+        this._sendQueue = [];
         this._bound = false;
         if (iface) {
             this.bind(iface);
