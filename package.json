@@ -8,7 +8,7 @@
   },
   "main": "dist/rawcan.js",
   "typescript": {
-    "definition": "dist/lib/rawcan.d.ts"
+    "definition": "dist/rawcan.d.ts"
   },
   "scripts": {
     "configure": "node-gyp configure",
