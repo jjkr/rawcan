@@ -21,6 +21,7 @@ export class Socket extends EventEmitter {
     this._handle.onMessage(
         (id, buffer) => { this.emit('message', id, buffer); });
     this._handle.onError((err) => { this.emit('error', err); });
+    this._sendQueue = [];
     this._bound = false;
     if (iface) {
       this.bind(iface);
