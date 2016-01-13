@@ -17,6 +17,7 @@
     "build": "npm run build:gyp && npm run build:js",
     "preversion": "npm test && cp build/lib/rawcan.* dist",
     "watch": "npm run build:js -- --watch",
+    "pretest": "npm run build",
     "test": "NODE_ENV=test mocha build/test --recursive"
   },
   "repository": {
