@@ -88,3 +88,4 @@ exports.ERR_FLAG = 0x20000000;
 exports.SFF_MASK = 0x7FF;
 exports.EFF_MASK = 0x1FFFFFFF;
 exports.ERR_MASK = 0x1FFFFFFF;
+//# sourceMappingURL=rawcan.js.map
