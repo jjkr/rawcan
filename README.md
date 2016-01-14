@@ -1,15 +1,22 @@
 # rawcan
 [![Build Status](https://travis-ci.org/jjkr/rawcan.svg?branch=master)](https://travis-ci.org/jjkr/rawcan)
 
-Lightweight Node.js bindings for raw CAN sockets on Linux.
+Lightweight asynchronous Node.js bindings for SocketCAN. SocketCAN is a socket based implementation of the CAN bus protocol for the Linux kernel, developed primarily by VW.
 
 ```javascript
 import can from 'rawcan';
 
-const server = can.createSocket('vcan0');
+const socket = can.createSocket('vcan0');
 
-server.on('error', (err) => { console.log('server error: ' + err); });
-server.on('message', (id, buffer) => {
-  console.log('server got [' + id.toString(16) + '] ' + buffer.toString('hex'));
+socket.on('error', (err) => { console.log('socket error: ' + err); });
+socket.on('message', (id, buffer) => {
+  console.log('received frame [' + id.toString(16) + '] ' + buffer.toString('hex'));
 });
+
+socket.send(CAN_EFF_MASK | 0x23c89f, 'hello');
 ```
+
+How is this different from node-can?
+------------------------------------
+
+There is another node package for SocketCAN called [node-can](https://github.com/sebi2k1/node-can) (socketcan in npm). The main differences are it does not support asynchronous sending or TypeScript bindings, which this package does. It also has some messaging features, while this package is simply a thin wrapper around raw CAN sockets.
