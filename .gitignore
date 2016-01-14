@@ -1,5 +1,4 @@
 /build/
 /node_modules/
-/typings/
 npm-debug.log
 .ycm_extra_conf.pyc
