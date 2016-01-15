@@ -1,3 +1,4 @@
+"use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -36,11 +37,12 @@ var Socket = (function (_super) {
         if (typeof buffer === 'string') {
             buffer = new Buffer(buffer.toString());
         }
+        var castedBuffer = buffer;
         this._healthCheck();
         var sending = this._sendQueue.length > 0;
-        this._sendQueue.push({ id: id, buffer: buffer, callback: callback });
+        this._sendQueue.push({ id: id, buffer: castedBuffer, callback: callback });
         if (!sending) {
-            this._handle.send(id, buffer);
+            this._handle.send(id, castedBuffer);
         }
     };
     Socket.prototype.setFilter = function (filter, mask) {
@@ -78,7 +80,7 @@ var Socket = (function (_super) {
         }
     };
     return Socket;
-})(events_1.EventEmitter);
+}(events_1.EventEmitter));
 exports.Socket = Socket;
 function createSocket(iface) { return new Socket(iface); }
 exports.createSocket = createSocket;

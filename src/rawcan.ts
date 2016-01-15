@@ -44,7 +44,8 @@ export class Socket extends EventEmitter {
     return this;
   }
 
-  send(id: number, buffer: string | Buffer, callback?: (err: number) => void) {
+  send(id: number, buffer: string | Buffer,
+       callback?: (err: number) => void): void {
     if (typeof buffer === 'string') {
       buffer = new Buffer(buffer.toString());
     }
@@ -59,29 +60,29 @@ export class Socket extends EventEmitter {
     }
   }
 
-  setFilter(filter: number, mask: number) {
+  setFilter(filter: number, mask: number): void {
     this._healthCheck();
     this._handle.setFilter(filter, mask);
   }
 
-  close() {
+  close(): void {
     this._healthCheck();
     this._handle.close();
     this._handle = undefined;
     this.emit('close');
   }
 
-  ref() {
+  ref(): void {
     this._healthCheck();
     this._handle.ref();
   }
 
-  unref() {
+  unref(): void {
     this._healthCheck();
     this._handle.unref();
   }
 
-  _onSent(err: number) {
+  _onSent(err: number): void {
     const sent = this._sendQueue[0];
     if (sent.callback) {
       sent.callback(err);
@@ -93,7 +94,7 @@ export class Socket extends EventEmitter {
     }
   }
 
-  _healthCheck() {
+  _healthCheck(): void {
     if (!this._handle) {
       throw new Error('Not running');
     }

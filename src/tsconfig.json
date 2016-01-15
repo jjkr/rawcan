@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "module": "commonjs",
+    "target": "es5",
+    "outDir": "../dist",
+    "declaration": true,
+    "sourceMap": false,
+    "noImplicitAny": true,
+    "removeComments": true,
+    "preserveConstEnums": true
+  },
+  "files": [ "rawcan.ts" ]
+}
