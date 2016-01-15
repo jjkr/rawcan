@@ -13,8 +13,8 @@
   "scripts": {
     "configure": "node-gyp configure",
     "build:gyp": "node-gyp build",
-    "build:jssrc": "cd src/ && tsc",
-    "build:jstest": "cd test/ && tsc",
+    "build:jssrc": "tsc -p src",
+    "build:jstest": "tsc -p test",
     "build:js": "npm run build:jssrc && npm run build:jstest",
     "build": "npm run build:gyp && npm run build:js",
     "preversion": "npm test && cp build/lib/rawcan.* dist",
