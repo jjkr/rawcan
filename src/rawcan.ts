@@ -1,4 +1,4 @@
-/// <library path="../typings/tsd.d.ts"/>
+/// <reference path="../typings/tsd.d.ts"/>
 import {EventEmitter} from 'events';
 /// <reference path="./can_wrap.d.ts"/>
 import {CANWrap} from './can_wrap';
