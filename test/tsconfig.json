@@ -2,16 +2,12 @@
   "compilerOptions": {
     "module": "commonjs",
     "target": "es5",
-    "declaration": true,
-    "outDir": "build",
+    "outDir": "../build",
+    "declaration": false,
     "sourceMap": false,
     "noImplicitAny": false,
     "removeComments": true,
     "preserveConstEnums": true
   },
-  "exclude": [
-    "node_modules",
-    "build",
-    "dist"
-  ]
+  "files": [ "rawcan_test.ts" ]
 }

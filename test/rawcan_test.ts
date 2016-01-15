@@ -1,6 +1,6 @@
 /// <reference path="../typings/tsd.d.ts"/>
 import {expect} from 'chai';
-import * as can from '../lib/rawcan';
+import can = require('../dist/rawcan');
 
 describe('can Socket', () => {
   describe('constructor', () => {

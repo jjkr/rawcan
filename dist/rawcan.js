@@ -1,4 +1,3 @@
-"use strict";
 var __extends = (this && this.__extends) || function (d, b) {
     for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
     function __() { this.constructor = d; }
@@ -80,7 +79,7 @@ var Socket = (function (_super) {
         }
     };
     return Socket;
-}(events_1.EventEmitter));
+})(events_1.EventEmitter);
 exports.Socket = Socket;
 function createSocket(iface) { return new Socket(iface); }
 exports.createSocket = createSocket;
