@@ -4,15 +4,15 @@ import {EventEmitter} from 'events';
 import {CANWrap} from './can_wrap';
 
 interface SendRequest {
-  id : number;
-  buffer : Buffer;
-  callback : (err: number) => void;
+  id: number;
+  buffer: Buffer;
+  callback: (err: number) => void;
 }
 
 export class Socket extends EventEmitter {
-  private _handle : CANWrap;
-  private _bound : boolean;
-  private _sendQueue : SendRequest[];
+  private _handle: CANWrap;
+  private _bound: boolean;
+  private _sendQueue: SendRequest[];
 
   constructor(iface?: string) {
     super();
@@ -28,7 +28,7 @@ export class Socket extends EventEmitter {
     }
   }
 
-  bind(iface: string) : Socket {
+  bind(iface: string): Socket {
     if (this._bound) {
       throw new Error('Socket is already bound');
     }
@@ -36,7 +36,7 @@ export class Socket extends EventEmitter {
     this._healthCheck();
 
     const err = this._handle.bind(iface);
-    if(err != 0) {
+    if (err != 0) {
       throw new Error('Failed to bind: ' + err);
     }
 
@@ -44,17 +44,18 @@ export class Socket extends EventEmitter {
     return this;
   }
 
-  send(id: number, buffer: string|Buffer, callback?: (err: number) => void) {
+  send(id: number, buffer: string | Buffer, callback?: (err: number) => void) {
     if (typeof buffer === 'string') {
       buffer = new Buffer(buffer.toString());
     }
+    const castedBuffer = <Buffer>buffer;
 
     this._healthCheck();
     const sending = this._sendQueue.length > 0;
-    this._sendQueue.push({id: id, buffer: <Buffer>buffer, callback: callback});
+    this._sendQueue.push({id: id, buffer: castedBuffer, callback: callback});
 
     if (!sending) {
-      this._handle.send(id, <Buffer>buffer);
+      this._handle.send(id, castedBuffer);
     }
   }
 
@@ -101,10 +102,10 @@ export class Socket extends EventEmitter {
 
 export function createSocket(iface?: string) { return new Socket(iface); }
 
-export const EFF_FLAG : number = 0x80000000; // extended frame format
-export const RTR_FLAG : number = 0x40000000; // remote transmission request
-export const ERR_FLAG : number = 0x20000000; // error
+export const EFF_FLAG: number = 0x80000000;  // extended frame format
+export const RTR_FLAG: number = 0x40000000;  // remote transmission request
+export const ERR_FLAG: number = 0x20000000;  // error
 
-export const SFF_MASK : number = 0x7FF; // standard frame format - 11 bits
-export const EFF_MASK : number = 0x1FFFFFFF; // extended frame format - 29 bits
-export const ERR_MASK : number = 0x1FFFFFFF;
+export const SFF_MASK: number = 0x7FF;       // standard frame format - 11 bits
+export const EFF_MASK: number = 0x1FFFFFFF;  // extended frame format - 29 bits
+export const ERR_MASK: number = 0x1FFFFFFF;
