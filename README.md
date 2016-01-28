@@ -8,12 +8,12 @@ import can from 'rawcan';
 
 const socket = can.createSocket('vcan0');
 
-socket.on('error', (err) => { console.log('socket error: ' + err); });
+socket.on('error', err => { console.log('socket error: ' + err); });
 socket.on('message', (id, buffer) => {
   console.log('received frame [' + id.toString(16) + '] ' + buffer.toString('hex'));
 });
 
-socket.send(CAN_EFF_MASK | 0x23c89f, 'hello');
+socket.send(can.EFF_FLAG | 0x23c89f, 'hello');
 ```
 
 Installing
