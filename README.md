@@ -22,7 +22,7 @@ Installing
 This package is published to npm, so installing is as simple as:
 
 ```
-npm install rawcan
+$ npm install rawcan
 ```
 
 Typescript bindings are included, so Typescript should just work.
@@ -39,22 +39,22 @@ $ sudo aptitude install build-essential
 After you have cloned the repo, run the following to install the npm dependencies and build the code:
 
 ```
-npm install
-npm run build
+$ npm install
+$ npm run build
 ```
 
 Running the tests requires a virtual CAN network interface called vcan0.
 
 ```
-sudo modprobe vcan
-sudo ip link add type vcan
-sudo ip link set vcan0 up
+$ sudo modprobe vcan
+$ sudo ip link add type vcan
+$ sudo ip link set vcan0 up
 ```
 
 Then the tests can be run with npm
 
 ```
-npm test
+$ npm test
 ```
 
 How is this different from node-can?
