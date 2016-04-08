@@ -4,7 +4,7 @@
 Lightweight asynchronous Node.js bindings for SocketCAN. SocketCAN is a socket based implementation of the CAN bus protocol for the Linux kernel, developed primarily by VW.
 
 ```javascript
-import can from 'rawcan';
+import * as can from 'rawcan';
 
 const socket = can.createSocket('vcan0');
 
