@@ -1,6 +1,6 @@
 {
   "name": "rawcan",
-  "version": "0.1.15",
+  "version": "1.0.0",
   "description": "Bindings for SocketCAN",
   "author": {
     "name": "Joe Kramer",
