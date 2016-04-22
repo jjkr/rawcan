@@ -50,6 +50,14 @@ describe('can Socket', () => {
         done();
       });
     });
+    it('sends a byte array', (done) => {
+      const sock = can.createSocket();
+      sock.bind('vcan0');
+      sock.send(0x34, [1, 4, 2], () => {
+        sock.close();
+        done();
+      });
+    });
     it('triggers callback', (done) => {
       const sock = new can.Socket();
       sock.bind('vcan0');

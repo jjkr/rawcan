@@ -5,7 +5,7 @@ export declare class Socket extends EventEmitter {
     private _sendQueue;
     constructor(iface?: string);
     bind(iface: string): Socket;
-    send(id: number, buffer: string | Buffer, callback?: (err: number) => void): void;
+    send(id: number, buffer: string | Buffer | number[], callback?: (err: number) => void): void;
     setFilter(filter: number, mask: number): void;
     close(): void;
     ref(): void;

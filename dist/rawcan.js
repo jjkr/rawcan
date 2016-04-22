@@ -34,7 +34,7 @@ var Socket = (function (_super) {
         return this;
     };
     Socket.prototype.send = function (id, buffer, callback) {
-        if (typeof buffer === 'string') {
+        if (!(buffer instanceof Buffer)) {
             buffer = new Buffer(buffer.toString());
         }
         var castedBuffer = buffer;
