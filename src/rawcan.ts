@@ -47,7 +47,7 @@ export class Socket extends EventEmitter {
   send(id: number, buffer: string | Buffer | number[],
        callback?: (err: number) => void): void {
     if (!(buffer instanceof Buffer)) {
-      buffer = new Buffer(buffer.toString());
+      buffer = new Buffer(<any>buffer);
     }
     const castedBuffer = <Buffer>buffer;
 
