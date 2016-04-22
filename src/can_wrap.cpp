@@ -103,7 +103,7 @@ NAN_METHOD(CANWrap::Send)
 {
     // send(id, buffer)
     assert(2 == info.Length());
-    assert(info[0]->IsUint32());
+    assert(info[0]->IsInt32());
     assert(node::Buffer::HasInstance(info[1]));
 
     auto* self = ObjectWrap::Unwrap<CANWrap>(info.Holder());

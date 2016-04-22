@@ -28,9 +28,16 @@ describe('can Socket', () => {
   });
 
   describe('send', () => {
-    it('sends a buffer', (done) => {
+    it('sends a CAN2.0A buffer', (done) => {
       const sock = can.createSocket('vcan0');
       sock.send(0x34, new Buffer([0xDE, 0xAD, 0xBE, 0xEF]), () => {
+        sock.close();
+        done();
+      });
+    });
+    it('sends a CAN2.0B buffer', (done) => {
+      const sock = can.createSocket('vcan0');
+      sock.send(can.EFF_FLAG | 0x34 >>> 0, new Buffer([0xDE, 0xAD, 0xBE, 0xEF]), () => {
         sock.close();
         done();
       });
