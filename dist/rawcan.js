@@ -38,6 +38,7 @@ var Socket = (function (_super) {
             buffer = new Buffer(buffer.toString());
         }
         var castedBuffer = buffer;
+        id = id >>> 0;
         this._healthCheck();
         var sending = this._sendQueue.length > 0;
         this._sendQueue.push({ id: id, buffer: castedBuffer, callback: callback });
@@ -47,7 +48,7 @@ var Socket = (function (_super) {
     };
     Socket.prototype.setFilter = function (filter, mask) {
         this._healthCheck();
-        this._handle.setFilter(filter, mask);
+        this._handle.setFilter(filter >>> 0, mask);
     };
     Socket.prototype.close = function () {
         this._healthCheck();

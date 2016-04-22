@@ -51,6 +51,7 @@ export class Socket extends EventEmitter {
     }
     const castedBuffer = <Buffer>buffer;
 
+    id = id >>> 0;
     this._healthCheck();
     const sending = this._sendQueue.length > 0;
     this._sendQueue.push({id: id, buffer: castedBuffer, callback: callback});
@@ -62,7 +63,7 @@ export class Socket extends EventEmitter {
 
   setFilter(filter: number, mask: number): void {
     this._healthCheck();
-    this._handle.setFilter(filter, mask);
+    this._handle.setFilter(filter >>> 0, mask);
   }
 
   close(): void {
